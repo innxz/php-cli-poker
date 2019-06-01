@@ -1,0 +1,9 @@
+{
+    "name": "innxz/php-cli-poker",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}
