@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\HandHandler;
 use App\Input;
+use App\Judge;
 use App\Validator;
 
 require_once 'vendor/autoload.php';
@@ -15,6 +16,8 @@ for ($i = 1; $i <= 9; $i++) {
     $player = 'p'. $i;
     if (isset($input[$player])) {
         $playersCards = array_merge($input[$player], $input['board']);
-        $players[$player] = (new HandHandler($playersCards))->getCombination();
+        $players[$player] = (new HandHandler($playersCards, $player))->getCombination();
     }
 }
+
+$priority = (new Judge($players))->getPriority();

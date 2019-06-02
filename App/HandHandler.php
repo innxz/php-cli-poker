@@ -26,9 +26,12 @@ class HandHandler
 
     private $fourOfKindValue;
 
-    public function __construct(array $cards)
+    private $playerName;
+
+    public function __construct(array $cards, string $playerName)
     {
         $this->cards = $cards;
+        $this->playerName = $playerName;
         $this->sortCards();
         $this->setKicker();
         $this->getCountOfSuitsAndValues();
@@ -119,6 +122,8 @@ class HandHandler
                 'flush_suit' => $this->flushSuit,
             ];
         }
+
+        $combination['player_name'] = $this->playerName;
 
         return $combination;
     }
