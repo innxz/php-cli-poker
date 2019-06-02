@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-class ValueEnum
+class CardValueEnum
 {
     public const FLIPPED_ACE = 1;
 
