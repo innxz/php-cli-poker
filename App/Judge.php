@@ -15,7 +15,7 @@ class Judge
         $this->calculatePriority();
     }
 
-    public function getPriority(): array
+    public function getPlayersByPriority(): array
     {
         return $this->players;
     }

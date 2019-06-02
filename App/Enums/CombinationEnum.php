@@ -24,4 +24,17 @@ class CombinationEnum
     public const ONE_PAIR = 1;
 
     public const HIGH_CARD = 0;
+
+    public const LIST = [
+        self::HIGH_CARD => 'High card',
+        self::ONE_PAIR => 'One pair',
+        self::TWO_PAIR => 'Two pair',
+        self::THREE_OF_KIND => 'Three of a kind',
+        self::STRAIGHT => 'Straight',
+        self::FLUSH => 'Flush',
+        self::FULL_HOUSE => 'Full house',
+        self::FOUR_OF_KIND => 'Four of a kind',
+        self::STRAIGHT_FLUSH => 'Straight flush',
+        self::ROYAL_FLUSH => 'Royal flush',
+    ];
 }

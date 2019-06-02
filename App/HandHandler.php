@@ -26,11 +26,17 @@ class HandHandler
 
     private $fourOfKindValue;
 
+    private $playerCards;
+
+    private $boardCards;
+
     private $playerName;
 
-    public function __construct(array $cards, string $playerName)
+    public function __construct(string $playerName, array $playerCards, array $boardCards)
     {
-        $this->cards = $cards;
+        $this->cards = array_merge($playerCards, $boardCards);
+        $this->playerCards = $playerCards;
+        $this->boardCards = $boardCards;
         $this->playerName = $playerName;
         $this->sortCards();
         $this->setKicker();
@@ -80,6 +86,7 @@ class HandHandler
             $combination = [
                 'combination' => CombinationEnum::STRAIGHT,
                 'high_end' => $this->highEnd,
+                'straight' => $this->cardValues,
             ];
         }
 
@@ -113,6 +120,7 @@ class HandHandler
                 'combination' => CombinationEnum::STRAIGHT_FLUSH,
                 'flush_suit' => $this->flushSuit,
                 'high_end' => $this->highEnd,
+                'straight' => $this->cardValues,
             ];
         }
 
@@ -124,6 +132,8 @@ class HandHandler
         }
 
         $combination['player_name'] = $this->playerName;
+        $combination['player_cards'] = $this->playerCards;
+        $combination['board_cards'] = $this->boardCards;
 
         return $combination;
     }
@@ -202,13 +212,18 @@ class HandHandler
     private function isStraight(): bool
     {
         $count = count($this->cardValues);
+
+        if ($count < 5) {
+            return false;
+        }
+
         $pass = 0;
 
         for ($i = 1; $i < $count; $i++) {
             if ($this->cardValues[$i] - $this->cardValues[$i - 1] !== 1) {
 
                 $pass++;
-                if ($pass > 2) {
+                if ($pass > 1) {
                     return false;
                 }
             }
@@ -228,6 +243,8 @@ class HandHandler
                 array_unshift($this->cardValues, CardValueEnum::FLIPPED_ACE);
             }
         }
+
+        $this->cardValues = array_values(array_unique($this->cardValues, SORT_NUMERIC));
     }
 
     private function isFlush(): bool
