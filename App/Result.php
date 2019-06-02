@@ -66,25 +66,18 @@ class Result
 
     private function getKickerList(): string
     {
-        $resultAllCards = '{';
-        $resultPlayerCards = '{';
+        $resultAllCards = [];
+        $resultPlayerCards = [];
 
         foreach ($this->cards as $name => $card) {
-            if ($card['value'] === $this->player['kicker']) {
-                $resultAllCards .= $name;
-            }
+            $resultAllCards[] = $name;
         }
 
         foreach ($this->player['player_cards'] as $name => $card) {
-            if ($card['value'] === $this->player['kicker']) {
-                $resultPlayerCards .= $name;
-            }
+            $resultPlayerCards[] = $name;
         }
 
-        $resultAllCards .= '}';
-        $resultPlayerCards .= '}';
-
-        return $resultAllCards . ' ' . $resultPlayerCards;
+        return $this->sortCards($resultAllCards, $resultPlayerCards);
     }
 
     private function getOnePairList(): string
@@ -307,7 +300,7 @@ class Result
         $value = array_column($cards, 'value');
         $suit = array_column($cards, 'suit');
 
-        array_multisort($value, SORT_DESC, $suit, SORT_ASC, $cards);
+        array_multisort($value, SORT_ASC, $suit, SORT_ASC, $cards);
 
         if (count($cards) > 5) {
             $cards = array_slice($cards, 0, 5, true);
