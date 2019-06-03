@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Enums\CardEnum;
+use App\Enums\CardValueEnum;
 use App\Enums\CombinationEnum;
 
 class Result
@@ -69,6 +70,9 @@ class Result
         $resultAllCards = [];
         $resultPlayerCards = [];
 
+        $this->cards = $this->sortCardsDesc($this->cards);
+        $this->cards = array_slice($this->cards, 0, 5, true);
+
         foreach ($this->cards as $name => $card) {
             $resultAllCards[] = $name;
         }
@@ -85,9 +89,24 @@ class Result
         $resultAllCards = [];
         $resultPlayerCards = [];
 
+        $this->cards = $this->sortCardsDesc($this->cards);
+
         foreach ($this->cards as $name => $card) {
             if ($card['value'] === $this->player['pair_rank']) {
                 $resultAllCards[] = $name;
+            }
+        }
+
+        $additionalCards = 0;
+
+        foreach ($this->cards as $name => $card) {
+            if ($card['value'] !== $this->player['pair_rank']) {
+                $resultAllCards[] = $name;
+                $additionalCards++;
+            }
+
+            if ($additionalCards === 3) {
+                break;
             }
         }
 
@@ -105,26 +124,23 @@ class Result
         $resultAllCards = [];
         $resultPlayerCards = [];
 
+        $this->cards = $this->sortCardsDesc($this->cards);
+
         foreach ($this->cards as $name => $card) {
-            if ($card['value'] === $this->player['low_pair_rank']) {
+            if ($card['value'] === $this->player['low_pair_rank'] || $card['value'] === $this->player['high_pair_rank']) {
                 $resultAllCards[] = $name;
             }
         }
 
-        foreach ($this->player['player_cards'] as $name => $card) {
-            if ($card['value'] === $this->player['low_pair_rank']) {
-                $resultPlayerCards[] = $name;
-            }
-        }
-
         foreach ($this->cards as $name => $card) {
-            if ($card['value'] === $this->player['high_pair_rank']) {
+            if ($card['value'] !== $this->player['low_pair_rank'] && $card['value'] !== $this->player['high_pair_rank']) {
                 $resultAllCards[] = $name;
+                break;
             }
         }
 
         foreach ($this->player['player_cards'] as $name => $card) {
-            if ($card['value'] === $this->player['high_pair_rank']) {
+            if ($card['value'] === $this->player['low_pair_rank'] || $card['value'] === $this->player['high_pair_rank']) {
                 $resultPlayerCards[] = $name;
             }
         }
@@ -137,9 +153,24 @@ class Result
         $resultAllCards = [];
         $resultPlayerCards = [];
 
+        $this->cards = $this->sortCardsDesc($this->cards);
+
         foreach ($this->cards as $name => $card) {
             if ($card['value'] === $this->player['set_rank']) {
                 $resultAllCards[] = $name;
+            }
+        }
+
+        $additionalCards = 0;
+
+        foreach ($this->cards as $name => $card) {
+            if ($card['value'] !== $this->player['set_rank']) {
+                $resultAllCards[] = $name;
+                $additionalCards++;
+            }
+
+            if ($additionalCards === 2) {
+                break;
             }
         }
 
@@ -160,6 +191,10 @@ class Result
 
         foreach ($this->cards as $name => $card) {
             foreach ($this->player['straight'] as $item) {
+                if ($item === CardValueEnum::FLIPPED_ACE) {
+                    $item = CardValueEnum::ACE;
+                }
+
                 if ($card['value'] === $item && !in_array($item, $usedCards, true)) {
                     $resultAllCards[] = $name;
                     $usedCards[] = $item;
@@ -169,6 +204,10 @@ class Result
 
         foreach ($this->player['player_cards'] as $name => $card) {
             foreach ($this->player['straight'] as $item) {
+                if ($item === CardValueEnum::FLIPPED_ACE) {
+                    $item = CardValueEnum::ACE;
+                }
+
                 if ($card['value'] === $item && in_array($item, $usedCards, true)) {
                     $resultPlayerCards[] = $name;
                     $usedCards[] = $item;
@@ -183,15 +222,23 @@ class Result
     {
         $resultAllCards = [];
         $resultPlayerCards = [];
+        $usedCards = [];
+
+        $this->cards = $this->sortCardsDesc($this->cards);
 
         foreach ($this->cards as $name => $card) {
             if ($card['suit'] === $this->player['flush_suit']) {
                 $resultAllCards[] = $name;
+                $usedCards[] = $name;
+            }
+
+            if (count($usedCards) === 5) {
+                break;
             }
         }
 
         foreach ($this->player['player_cards'] as $name => $card) {
-            if ($card['suit'] === $this->player['flush_suit']) {
+            if ($card['suit'] === $this->player['flush_suit'] && in_array($name, $usedCards, true)) {
                 $resultPlayerCards[] = $name;
             }
         }
@@ -236,9 +283,18 @@ class Result
         $resultAllCards = [];
         $resultPlayerCards = [];
 
+        $this->cards = $this->sortCardsDesc($this->cards);
+
         foreach ($this->cards as $name => $card) {
             if ($card['value'] === $this->player['four_of_kind_rank']) {
                 $resultAllCards[] = $name;
+            }
+        }
+
+        foreach ($this->cards as $name => $card) {
+            if ($card['value'] !== $this->player['four_of_kind_rank']) {
+                $resultAllCards[] = $name;
+                break;
             }
         }
 
@@ -255,6 +311,8 @@ class Result
     {
         $resultAllCards = [];
         $resultPlayerCards = [];
+
+        $this->cards = $this->sortCardsDesc($this->cards);
 
         foreach ($this->cards as $name => $card) {
             foreach ($this->player['straight'] as $item) {
@@ -288,23 +346,29 @@ class Result
             $resultPlayerCardsFull[$card] = CardEnum::LIST[$card];
         }
 
-        $resultAllCardsFull = $this->sortArray($resultAllCardsFull);
-        $resultPlayerCardsFull = $this->sortArray($resultPlayerCardsFull);
+        $resultAllCardsFull = $this->sortCardsAsc($resultAllCardsFull);
+        $resultPlayerCardsFull = $this->sortCardsDesc($resultPlayerCardsFull);
 
-        return '{' . implode(' ', array_keys($resultAllCardsFull)) . '} {' . implode(' ',
-                array_keys($resultPlayerCardsFull)) . '}';
+        return '[' . implode(' ', array_keys($resultAllCardsFull)) . '] [' . implode(' ',
+                array_keys($resultPlayerCardsFull)) . ']';
     }
 
-    private function sortArray(array $cards): array
+    private function sortCardsAsc(array $cards): array
     {
         $value = array_column($cards, 'value');
         $suit = array_column($cards, 'suit');
 
         array_multisort($value, SORT_ASC, $suit, SORT_ASC, $cards);
 
-        if (count($cards) > 5) {
-            $cards = array_slice($cards, 0, 5, true);
-        }
+        return $cards;
+    }
+
+    private function sortCardsDesc(array $cards): array
+    {
+        $value = array_column($cards, 'value');
+        $suit = array_column($cards, 'suit');
+
+        array_multisort($value, SORT_DESC, $suit, SORT_ASC, $cards);
 
         return $cards;
     }

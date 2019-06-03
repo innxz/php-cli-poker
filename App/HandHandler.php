@@ -32,6 +32,8 @@ class HandHandler
 
     private $playerName;
 
+    private $straightValues;
+
     public function __construct(string $playerName, array $playerCards, array $boardCards)
     {
         $this->cards = array_merge($playerCards, $boardCards);
@@ -86,11 +88,11 @@ class HandHandler
             $combination = [
                 'combination' => CombinationEnum::STRAIGHT,
                 'high_end' => $this->highEnd,
-                'straight' => $this->cardValues,
+                'straight' => $this->straightValues,
             ];
         }
 
-        if($this->isFlush()) {
+        if ($this->isFlush()) {
             $combination = [
                 'combination' => CombinationEnum::FLUSH,
                 'flush_suit' => $this->flushSuit,
@@ -120,7 +122,7 @@ class HandHandler
                 'combination' => CombinationEnum::STRAIGHT_FLUSH,
                 'flush_suit' => $this->flushSuit,
                 'high_end' => $this->highEnd,
-                'straight' => $this->cardValues,
+                'straight' => $this->straightValues,
             ];
         }
 
@@ -217,19 +219,46 @@ class HandHandler
             return false;
         }
 
-        $pass = 0;
-
-        for ($i = 1; $i < $count; $i++) {
-            if ($this->cardValues[$i] - $this->cardValues[$i - 1] !== 1) {
-
-                $pass++;
-                if ($pass > 1) {
-                    return false;
-                }
+        if ($count === 5) {
+            if ($this->findStraight($this->cardValues)) {
+                $this->straightValues = $this->cardValues;
+            } else {
+                return false;
             }
         }
 
+        if ($count > 5) {
+            $straight = [];
+            $lowerStraight = array_values(array_slice($this->cardValues, 0, 5, true));
+            $higherStraight = array_values(array_slice($this->cardValues, 1, 5, true));
+
+            if ($this->findStraight($lowerStraight)) {
+                $straight = $lowerStraight;
+            }
+
+            if ($this->findStraight($higherStraight)) {
+                $straight = $higherStraight;
+            }
+
+            if (empty($straight)) {
+                return false;
+            }
+
+            $this->straightValues = $straight;
+        }
+
         $this->highEnd = end($this->cardValues);
+
+        return true;
+    }
+
+    private function findStraight(array $values): bool
+    {
+        for ($i = 1; $i < 5; $i++) {
+            if ($values[$i] - $values[$i - 1] !== 1) {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -238,10 +267,6 @@ class HandHandler
     {
         foreach ($this->cards as $card) {
             $this->cardValues[] = $card['value'];
-
-            if ($card['value'] === CardValueEnum::ACE) {
-                array_unshift($this->cardValues, CardValueEnum::FLIPPED_ACE);
-            }
         }
 
         $this->cardValues = array_values(array_unique($this->cardValues, SORT_NUMERIC));
