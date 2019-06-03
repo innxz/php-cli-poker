@@ -34,6 +34,10 @@ class HandHandler
 
     private $straightValues;
 
+    private $straightHigEnd;
+
+    private $flushHighEnd;
+
     public function __construct(string $playerName, array $playerCards, array $boardCards)
     {
         $this->cards = array_merge($playerCards, $boardCards);
@@ -230,14 +234,21 @@ class HandHandler
         if ($count > 5) {
             $straight = [];
             $lowerStraight = array_values(array_slice($this->cardValues, 0, 5, true));
-            $higherStraight = array_values(array_slice($this->cardValues, 1, 5, true));
+            $midStraight = array_values(array_slice($this->cardValues, 1, 5, true));
 
             if ($this->findStraight($lowerStraight)) {
                 $straight = $lowerStraight;
             }
 
-            if ($this->findStraight($higherStraight)) {
-                $straight = $higherStraight;
+            if ($this->findStraight($midStraight)) {
+                $straight = $midStraight;
+            }
+
+            if ($count === 7) {
+                $highStraight = array_values(array_slice($this->cardValues, 2, 5, true));
+                if ($this->findStraight($highStraight)) {
+                    $straight = $highStraight;
+                }
             }
 
             if (empty($straight)) {
@@ -247,7 +258,7 @@ class HandHandler
             $this->straightValues = $straight;
         }
 
-        $this->highEnd = end($this->cardValues);
+        $this->highEnd = $this->straightHigEnd = end($this->straightValues);
 
         return true;
     }
@@ -277,7 +288,7 @@ class HandHandler
         foreach ($this->counts['suits'] as $suit => $count) {
             if ($count >= 5) {
                 $this->flushSuit = $suit;
-                $this->highEnd = $this->getHighValueOfSuit($suit);
+                $this->highEnd = $this->flushHighEnd = $this->getHighValueOfSuit($suit);
                 return true;
             }
         }
@@ -319,11 +330,23 @@ class HandHandler
 
     private function isStraightFlush(): bool
     {
-        return $this->isStraight() && $this->isFlush();
+        $count = 0;
+
+        if ($this->isStraight() && $this->isFlush()) {
+            foreach ($this->cards as $card) {
+                foreach ($this->straightValues as $value) {
+                    if ($card['value'] === $value && $card['suit'] === $this->flushSuit) {
+                        $count++;
+                    }
+                }
+            }
+        }
+
+        return $count === 5;
     }
 
     private function isRoyalFlush(): bool
     {
-        return $this->isStraightFlush() && $this->highEnd === CardValueEnum::ACE;
+        return $this->isStraightFlush() && $this->flushHighEnd === CardValueEnum::ACE && $this->straightHigEnd === CardValueEnum::ACE;
     }
 }
