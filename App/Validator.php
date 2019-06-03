@@ -125,10 +125,8 @@ class Validator
                     if ($count < 3 || $count > 5) {
                         throw new WrongCountOfCardsException('The board must be from three to five cards');
                     }
-                } else {
-                    if ($count !== 2) {
-                        throw new WrongCountOfCardsException('The player must have two cards');
-                    }
+                } elseif ($count !== 2) {
+                    throw new WrongCountOfCardsException('The player must have two cards');
                 }
             } catch (WrongCountOfCardsException $exception) {
                 die('error: ' . $exception->getMessage() . PHP_EOL);
