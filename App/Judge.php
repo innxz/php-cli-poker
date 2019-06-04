@@ -84,12 +84,12 @@ class Judge
 
     private function getPriorityInTwoPair(array $a, array $b): int
     {
-        if ($a['high_rank'] !== $b['high_rank']) {
-            return ($a['high_rank'] > $b['high_rank']) ? -1 : 1;
+        if ($a['high_pair_rank'] !== $b['high_pair_rank']) {
+            return ($a['high_pair_rank'] > $b['high_pair_rank']) ? -1 : 1;
         }
 
-        if ($a['low_rank'] !== $b['low_rank']) {
-            return ($a['low_rank'] > $b['low_rank']) ? -1 : 1;
+        if ($a['low_pair_rank'] !== $b['low_pair_rank']) {
+            return ($a['low_pair_rank'] > $b['low_pair_rank']) ? -1 : 1;
         }
 
         return $this->getPriorityByKicker($a, $b);
